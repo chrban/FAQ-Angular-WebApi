@@ -1,0 +1,11 @@
+﻿using System;
+using System.Collections.Generic;
+using System.Linq;
+using System.Web;
+
+namespace FAQ_Web_Api_Angular
+{
+	public class FaqDB
+	{
+	}
+}

@@ -1,0 +1,194 @@
+﻿<!DOCTYPE html>
+<html ng-app="App">
+<head>
+    <title></title>
+	<meta charset="utf-8" />
+    <script src="../JS/angular.min.js"></script>
+    <script src="../JS/jquery-1.9.1.min.js"></script>
+    <script src="../JS/bootstrap.min.js"></script>
+    <link href="../../Content/bootstrap.min.css" rel="stylesheet" />
+    <link href="../../Content/mystyle.css" rel="stylesheet" />
+    <script src="controllers/faqController.js"></script>
+</head>
+<body>
+<div ng-controller="faqController">
+    <nav class="navbar navbar-inverse navbar-fixed-top">
+        <div class="container-fluid">
+            <div class="navbar-header">
+                <a class="navbar-brand" href="#" ng-click="getAllFaqs()">FAQ - Kaffeplaneten</a>
+            </div>
+            <div>
+                <ul class="nav navbar-nav">
+                    <li><a href="#" ng-click="getAllFaqs()">Vis alle FAQs</a></li>
+                    <li><a href="#" ng-click="listQuestions()">Mottatte spørsmål</a></li>
+                    <li><a href="#" ng-click="askQuestion()">Spør oss</a></li>
+                </ul>
+            </div>
+        </div>
+    </nav>
+    <div class="jumbotron">
+        <img src="../../Content/Logo.png" class="img-responsive" />
+    <h1 ng-show="loading" class="text-center info" >Laster inn data...</h1>
+        <div class="container">
+            <div ng-show="visFaqs">
+                <div class="page-header ">
+                    <h1 class="text-center">FAQ <br><small>Ofte stilte spørsmål - Kaffeplaneten</small></h1>
+                    <div id="roundWrapper">
+                        <div class="col-xs-6 .col-sm-3 btn btn-primary" ng-click="category('Produkt')"><i class="glyphicon glyphicon-leaf"> </i>    Produkt</div>
+                        <div class="col-xs-6 .col-sm-3 btn btn-primary" ng-click="category('Bruker')"><i class="glyphicon glyphicon-user"> </i>   Bruker</div>
+                        <div class="col-xs-6 .col-sm-3 btn btn-primary" ng-click="category('Levering')"><i class="glyphicon glyphicon-road"> </i>   Levering</div>
+                        <div class="col-xs-6 .col-sm-3 btn btn-primary" ng-click="category('Support')"><i class="glyphicon glyphicon-hourglass"> </i>   Support</div>
+                        <div type="button" class="btn btn-primary btn-circle btn-xl " ng-click="greaterThan()">Top 5</div> 
+                    </div>
+                </div>
+
+    <!--visTabell-->
+        <div ng-show="visTabell">
+            <h1 id="catTitle">Alle FAQ's</h1>
+                <div class="accordion" id="faqAccordion">     
+                    <div ng-repeat="faq in faqs">
+                                <div ng-show="vis{{faq.category}}">
+                                    <div class="panel panel-default ">
+                                        <div class="panel-heading" data-toggle="collapse" data-parent="#faqAccordion" data-target="#collapse{{faq.id}}">
+                                            <h4 class="panel-title">{{faq.question}}</h4></div>
+                                        <div id="collapse{{faq.id}}" class="panel-collapse collapse ">
+                                            <div class="panel-body">
+                                                {{faq.answer}}
+                                            </div>
+                                            <div class="panel-footer">
+                                                {{faq.top}} personer synes dette var et bra svar, <a href="#" ng-click="voteUp(faq.id)"> jeg også <i class="glyphicon glyphicon-thumbs-up"> </i> </a>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div> <!--end accord-->
+                </div> <!--end visTabell-->
+
+        <!--TOP 5-->
+        <div ng-show="visTop">
+            <h1 id="catTitle">Top 5</h1>
+            <div ng-repeat="faq in faqs | orderBy:'-top' | limitTo:5">
+                <div class="panel-group" id="accordionTop">
+                    <div class="panel panel-default">
+                        <div class="panel-heading">
+                            <h4 class="panel-title" data-toggle="collapse" data-parent="#accordionTop" href="#collapseTop{{faq.id}}">
+                                {{faq.category}}  -  {{faq.question}}</h4>
+                        </div>
+                        <div id="collapseTop{{faq.id}}" class="panel-collapse collapse ">
+                            <div class="panel-body">
+                                {{faq.answer}}
+                            </div>
+                            <div class="panel-footer">
+                                {{faq.top}} personer synes dette var et bra svar, <a href="#" ng-click="voteUp(faq.id)"> jeg også!</a>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div> <!--End visTop-->
+    </div><!--End visFaqs-->
+
+<!--Start visAsk-->
+    <div ng-show="visAsk">
+        <div class="jumbotron">
+            <div class="row">
+                <div class="formTitle">
+                    <h1 class="text-center">Spør oss</h1>
+                </div>
+                <div class="col-xs-12 col-sm-8 col-md-6 col-sm-offset-2 col-md-offset-3">
+                    <form name="schema" role="form">
+                        <div class="row">
+                            <div class="col-md-12">
+                                <div class="row">
+                                    <div class="form-group">
+                                        <div class="col-md-12">
+                                            <h3>Tittel:</h3>
+                                            <input class="form-control" id="inputTitle" data-ng-model="title" name="title" placeholder="Tittel" data-ng-required="true" data-ng-pattern="/^[a-zæøåA-ZÆØÅ0-9. ?!.,\-]*$/" data-ng-minlength="3" data-ng-maxlength="40" />
+                                            <p class="label label-primary" data-ng-show="schema.title.$error.minlength && schema.title.$dirty">Tittel er for kort (minst 2 tegn)</p>
+                                            <p class="label label-primary" data-ng-show="schema.title.$error.maxlength && schema.title.$dirty">Tittel er for lang</p>
+                                            <p class="label label-danger" data-ng-show="schema.title.$error.pattern && schema.title.$dirty">Tittel inneholder ugyldig tegn (kun bokstaver og tall er tillatt)</p>
+                                            <p class="label label-danger" data-ng-show="schema.title.$error.required && schema.title.$dirty">Tittel mangler!</p>
+                                        </div>
+                                    </div>
+                                    <div class="form-group">
+                                        <div class="col-md-12">
+                                            <h3>Hva lurer du på?:</h3>
+                                            <textarea class="form-control" data-ng-model="question" name="question" placeholder="Skriv inn ditt spørsmål..." id="textarea" data-ng-required="true" data-ng-minlength="5"></textarea>
+                                            <p class="label label-danger" data-ng-show="schema.question.$error.required && schema.question.$dirty">Spørsmål mangler!</p>
+                                            <p class="label label-primary" data-ng-show="schema.question.$error.minlength && schema.question.$dirty">Spørsmålet er for kort, vennligst beskriv mer detaljert</p>
+                                        </div>
+                                    </div>
+                                    <div class="form-group">
+                                        <div class="col-md-6">
+                                            <h3>Navn:</h3>
+                                            <input class="form-control input" data-ng-model="name" placeholder="Navn" name="name" data-ng-required="true" data-ng-pattern="/^[a-zæøåA-ZÆØÅ. \-]*$/" data-ng-minlength="3" data-ng-maxlength="40" />
+                                            <p class="label label-danger" data-ng-show="schema.name.$error.required && schema.name.$dirty">Navn mangler!</p>
+                                            <p class="label label-primary" data-ng-show="schema.name.$error.minlength && schema.name.$dirty">Navn er for kort</p>
+                                            <p class="label label-danger" data-ng-show="schema.name.$error.maxlength && schema.name.$dirty">Navn er for langt</p>
+                                            <p class="label label-danger" data-ng-show="schema.name.$error.pattern && schema.name.$dirty">Navn inneholder ugyldig tegn (kun bokstaver tillatt)</p>
+                                        </div>
+                                    </div>
+                                    <div class="form-group">
+                                        <div class="col-md-6">
+                                            <h3>E-post:</h3>
+                                            <input class="form-control input" data-ng-model="email" placeholder="Epost" name="email" data-ng-required="true" data-ng-pattern="/^[a-zA-ZæÆøØåÅ][\w\.-]*[a-zA-Z0-9æÆøØåÅ]@[a-zA-ZæÆøØåÅ][\w\.-]*[a-zA-Z0-9æÆøØåÅ]\.[a-zA-Z][a-zA-Z\.]*[a-zA-Z]$/" data-ng-minlength="2" data-ng-maxlength="60" />
+                                            <p class="label label-danger" data-ng-show="schema.email.$error.required && schema.email.$dirty">E-post mangler!</p>
+                                            <p class="label label-primary" data-ng-show="schema.email.$error.minlength && schema.email.$dirty">E-post er for kort</p>
+                                            <p class="label label-danger" data-ng-show="schema.email.$error.maxlength && schema.email.$dirty">E-post er for lang</p>
+                                            <p class="label label-primary" data-ng-show="schema.email.$error.pattern && schema.email.$dirty">E-post er ugyldig</p>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="row">
+                            <div class="col-xs-6 col-sm-6 col-md-6">
+                                <div class="form-group">
+                                    <button type="submit" data-ng-click="saveQuestion()" class="btn btn-primary" data-ng-disabled="schema.$invalid" tabindex="11" id="submit"
+                                        data-toggle="popover" data-placement="bottom" title="Takk for ditt sprøsmål!" data-content="Du hører fra oss innen 24 timer">Send</button>
+                                </div>
+                            </div>
+                            <div class="col-xs-6 col-sm-6 col-md-6">
+                            <button type="submit" data-ng-click="getAllFaqs()" class="btn btn-primary">Tilbake</button>
+                            </div>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div><!--End visAsk-->
+
+
+     <!--Start visQuestions-->
+     <div ng-show="visQuestions">
+        <h1 class="text-center">Ubesvarte spørsmål</h1>
+                <div class="row">
+            <div ng-repeat="question in questions">
+                <div class="col-sm-6 col-md-6">
+                    <div class="thumbnail">
+                        <div class="caption">
+                            <h2 class="text-info">{{question.title}}   </h2>
+                            <p>{{question.question}}</p>
+                            <div class="modal-footer">
+                                Sendt inn av {{question.name}}. Trykk <a href="mailto:{{question.email}}?Subject=Kaffeplaneten-Support%20{{question.title}}" target="_top">her</a> for å svare |  
+                                <a href="#" ng-click="deleteQuestion(question.id)" >Slett <i class="remove glyphicon glyphicon-remove-sign alert-danger text-left"></i></a>
+                            </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div><!--end visQuestions-->
+
+
+
+            </div> <!--End container-->
+        </div> <!--end jumbo-->
+    </div><!--end controller-->
+    <footer class="text-center">
+        <p>Kaffeplaneten - 2015</p>
+        <p>Kaffeplaneten@gmail.com</p> 
+    </footer>
+</body>
+</html>
